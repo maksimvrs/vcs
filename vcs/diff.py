@@ -15,6 +15,8 @@ class Diff:
         :param data_after: Данные после изменений
         :return: Объект Changes
         """
+        if data_before is None:
+            data_before = ""
         changes = Changes()
         matcher = SequenceMatcher(None, data_before, data_after)
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():

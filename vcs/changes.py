@@ -48,6 +48,8 @@ class Changes:
         :param data: Данные, к которым нужно применить изменения
         :return: Измененные данные
         """
+        if data is None:
+            data = ""
         result = list(data)
         for change in reversed(self._changes):
             if change.type == ChangeType.insert:
@@ -64,6 +66,8 @@ class Changes:
         :param data: Данные, изменения для которыз нужно откатить
         :return: Предыдущая версия данных, с отмененными изменениями
         """
+        if data is None:
+            data = ""
         result = list(data)
         for change in self._changes:
             if change.type == ChangeType.insert:
