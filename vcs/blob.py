@@ -37,3 +37,9 @@ class Blob:
 
     def clear(self):
         self._data = None
+
+    def save(self):
+        return {'name': self.name,
+                'sha': self.sha,
+                'size': self.size,
+                'changes': self.changes.save()}

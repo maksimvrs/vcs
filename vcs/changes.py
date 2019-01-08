@@ -77,3 +77,9 @@ class Changes:
             elif change.type == ChangeType.replace:
                 result[change.index:len(change.data_after)+change.index] = list(change.data_before)
         return ''.join(result)
+
+    def save(self):
+        return [{'type': change.type,
+                 'index': change.index,
+                 'data_before': change.data_before,
+                 'data_after': change.data_after} for change in self._changes]

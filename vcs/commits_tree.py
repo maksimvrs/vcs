@@ -1,37 +1,61 @@
+from functools import reduce
+
+
 class CommitsTree:
     def __init__(self):
-        self.init = None
-        self.head = None
+        self._init = None
+        self._head = None
 
     def add(self, commit):
-        if self.head is not None:
-            commit.parent = self.head
-            self.head.childrens.append(commit)
+        if self._head is not None:
+            commit.parent = self._head
+            self._head.childrens.append(commit)
         else:
             commit.parent = None
-            self.head = commit
-            self.init = self.head
+            self._head = commit
+            self._init = self._head
 
     def back(self):
-        if self.head is None or self.head.parent is None:
+        if self._head is None or self._head.parent is None:
             return None
-        self.head = self.head.parent
-        return self.head
+        self._head = self._head.parent
+        return self._head
 
-    def set_head(self, commit_sha, current=None):
-        if self.init is None:
+    def set_head(self, commit_sha):
+        commit = self.search_commit(commit_sha)
+        if commit is not None:
+            self._head = commit
+        return commit
+
+    def get_head(self):
+        return self._head
+
+    def get_data(self, commit_sha):
+        commit = self.search_commit(commit_sha)
+        if commit is None:
+            return None
+        commits = [self._init]
+        while commit.parent is not None:
+            commits.append(commit)
+            commit = commit.parent
+        if len(commits) == 0:
+            return None
+        commits[0] = commits[0].apply()
+        return reduce(lambda a, x: x.apply(a), commits)
+
+    def search_commit(self, commit_sha, current=None):
+        if self._init is None:
             return None
         if current is None:
-            current = self.init
-        for commit in current.cildrens:
-            if commit.sha == commit_sha:
-                self.head = commit
-                return True
+            current = self._init
+        if self._init.sha.hexdigest() == commit_sha.hexdigest():
+            return self._init
+        for commit in current.childrens:
+            if commit.sha.hexdigest() == commit_sha.hexdigest():
+                return commit
             else:
                 for next_commit in commit.childrens:
-                    if self.set_head(commit_sha, next_commit):
-                        return True
-        return False
-
-    def get(self):
-        return self.head
+                    result = self.search_commit(commit_sha, next_commit)
+                    if result is not None:
+                        return result
+        return None

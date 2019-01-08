@@ -9,12 +9,12 @@ from vcs.diff import Diff
 class CommitTests(unittest.TestCase):
     def test_apply_one_blob(self):
         commit_tree = Tree('/')
-        commit_tree.blobs.append(Blob('README.md', '', 0, Diff.diff('Program', 'Test program')))
+        commit_tree.blobs.append(Blob('README.md', '1q', 0, Diff.diff('Program', 'Test program')))
 
         tree = Tree('/')
-        tree.blobs.append(Blob('README.md', '', 0, None, 'Program'))
+        tree.blobs.append(Blob('README.md', '2q', 0, None, 'Program'))
 
-        commit = Commit(None, "Initial commit")
+        commit = Commit(None, 'Maksim', 'Initial commit')
         commit.set(commit_tree)
         result = commit.apply(tree)
 
@@ -23,12 +23,12 @@ class CommitTests(unittest.TestCase):
 
     def test_roll_back_one_blob(self):
         commit_tree = Tree('/')
-        commit_tree.blobs.append(Blob('README.md', '', 0, Diff.diff('Program', 'Test program')))
+        commit_tree.blobs.append(Blob('README.md', '1q', 0, Diff.diff('Program', 'Test program')))
 
         tree = Tree('/')
-        tree.blobs.append(Blob('README.md', '', 0, None, 'Test program'))
+        tree.blobs.append(Blob('README.md', '2q', 0, None, 'Test program'))
 
-        commit = Commit(None, "Initial commit")
+        commit = Commit(None, 'Maksim', 'Initial commit')
         commit.set(commit_tree)
         result = commit.roll_back(tree)
 
