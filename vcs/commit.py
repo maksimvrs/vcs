@@ -101,8 +101,9 @@ class Commit(Transform):
         data['parent'] = self.parent
         data['author'] = self.author
         data['comment'] = self.comment
-        data['sha'] = self.sha
+        data['root'] = self.get().sha.hexdigest()
+        data['sha'] = self.sha.hexdigest()
         data['childrens'] = list()
         for child in self.childrens:
             data['childrens'].append(child.sha)
-        return json.dump(data, sort_keys=True)
+        return json.dumps(data, sort_keys=True, indent=4)

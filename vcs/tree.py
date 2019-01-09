@@ -22,8 +22,9 @@ class Tree:
 
     def json(self):
         data = dict()
+        data['name'] = self.name
         data['blobs'] = list()
         for blob in self.blobs:
             data['blobs'].append(blob.save())
         data['trees'] = [tree.sha for tree in self.trees]
-        return json.dump(data, sort_keys=True)
+        return json.dump(data, sort_keys=True, ident=4)

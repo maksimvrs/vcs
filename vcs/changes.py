@@ -39,8 +39,8 @@ class Changes:
         # Измененные фрагменты: (ChangeType.replace, индекс начала фрагмента, данные)
         self._changes = list()
 
-    def add(self, changes):
-        self._changes.append(changes)
+    def add(self, change):
+        self._changes.append(change)
 
     def apply(self, data):
         """
@@ -77,6 +77,11 @@ class Changes:
             elif change.type == ChangeType.replace:
                 result[change.index:len(change.data_after)+change.index] = list(change.data_before)
         return ''.join(result)
+
+    def load(self, data):
+        for change in data:
+            self.add(Change(change['type'], change['index'],
+                            change['data_before'], change['data_after']))
 
     def save(self):
         return [{'type': change.type,
