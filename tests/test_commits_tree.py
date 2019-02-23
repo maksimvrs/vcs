@@ -28,7 +28,7 @@ class CommitsTreeTests(unittest.TestCase):
         commits_tree.add(commit_2)
 
         self.assertEqual(commits_tree.get_data(commit_1.sha).blobs[0].name, 'README.md')
-        self.assertEqual(commits_tree.get_data(commit_1.sha).blobs[0].data(), 'Program')
+        self.assertEqual(commits_tree.get_data(commit_1.sha).blobs[0].apply(), 'Program')
 
         self.assertEqual(commits_tree.get_data(commit_2.sha).blobs[0].name, 'README.md')
-        self.assertEqual(commits_tree.get_data(commit_2.sha).blobs[0].data(), 'Test program')
+        self.assertEqual(commits_tree.get_data(commit_2.sha).blobs[0].apply(), 'Test program')

@@ -11,7 +11,6 @@ class Commit(Transform):
         self.parent = parent
         self.author = author
         self.comment = comment
-        self.childrens = list()
         self._tree = None
 
     @property
@@ -29,81 +28,45 @@ class Commit(Transform):
     def get(self):
         return self._tree
 
-    @property
-    def is_last(self):
-        return len(self.childrens) == 0
-
-    def apply(self, tree=None, commit_tree=None):
-        if commit_tree is None:
-            commit_tree = self._tree
+    def apply(self, tree=None, current_tree=None):
+        if current_tree is None:
+            current_tree = self._tree
         if isinstance(tree, Transform):
             # Применить коммит к другому коммиту или трансформатору
             # ToDo: Преобразование к трасформатору
             pass
         else:
             # Применить коммит к данным
-            result = Tree(commit_tree.name)
-            for blob in commit_tree.blobs:
+            result = Tree(current_tree.name)
+            for blob in current_tree.blobs:
                 if tree is not None:
                     blob_before = next((blob_before for blob_before in tree.blobs if blob_before.name == blob.name),
                                        None)
                     if blob_before is None:
-                        # blob.clear() ?
-                        data = blob.data()
+                        blob.apply()
                     else:
-                        # blob.clear() ?
-                        data = blob.data(blob_before.data())
+                        blob_before.apply()
+                        blob.apply(blob_before)
                 else:
-                    data = blob.data()
-                result.blobs.append(Blob(blob.name, blob.sha, blob.size, None, data))
-            for next_commit_tree in commit_tree.trees:
+                    blob.apply()
+                result.blobs.append(blob)
+                # result.blobs.append(Blob(blob.name, blob.sha, blob.size, changes=None, data=data))
+            if current_tree.trees is not None:
+                result.trees = list()
+            for next_current_tree in current_tree.trees:
                 if tree is not None:
-                    tree_before = next((tree_before for tree_before in tree.blobs
-                                        if tree_before.name == next_commit_tree.name), None)
-                    result.blobs.append(self.apply(tree_before, next_commit_tree))
+                    tree_before = next((tree_before for tree_before in tree.trees
+                                        if tree_before.name == next_current_tree.name), None)
+                    result.trees.append(self.apply(tree_before, next_current_tree))
                 else:
-                    result.blobs.append(self.apply(None, next_commit_tree))
+                    result.trees.append(self.apply(None, next_current_tree))
             return result
 
-    def roll_back(self, tree, commit_tree=None):
-        if commit_tree is None:
-            commit_tree = self._tree
-        if isinstance(tree, Transform):
-            # Применить коммит к другому коммиту или трансформатору
-            pass
-        else:
-            # Применить коммит к данным
-            result = Tree(commit_tree.name)
-            for blob in commit_tree.blobs:
-                if tree is not None:
-                    blob_after = next((blob_after for blob_after in tree.blobs if blob_after.name == blob.name),
-                                      None)
-                    if blob_after is None:
-                        # blob.clear() ?
-                        tree = blob.reset()
-                    else:
-                        # blob.clear() ?
-                        tree = blob.reset(blob_after.data())
-                else:
-                    tree = blob.reset()
-                result.blobs.append(Blob(blob.name, blob.sha, blob.size, None, tree))
-            for next_commit_tree in commit_tree.trees:
-                if tree is not None:
-                    tree_after = next((tree_before for tree_before in tree.blobs
-                                       if tree_before.name == next_commit_tree.name), None)
-                    result.blobs.append(self.roll_back(tree_after, next_commit_tree))
-                else:
-                    result.blobs.append(self.roll_back(None, next_commit_tree))
-            return result
-
-    def json_info(self):
+    def save(self):
         data = dict()
         data['parent'] = self.parent
         data['author'] = self.author
         data['comment'] = self.comment
-        data['root'] = self.get().sha.hexdigest()
         data['sha'] = self.sha.hexdigest()
-        data['childrens'] = list()
-        for child in self.childrens:
-            data['childrens'].append(child.sha)
+        data['tree'] = self._tree.save()
         return json.dumps(data, sort_keys=True, indent=4)

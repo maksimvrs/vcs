@@ -1,4 +1,3 @@
-import json
 import hashlib
 
 
@@ -20,11 +19,13 @@ class Tree:
             result.update(tree.sha)
         return result
 
-    def json(self):
+    def save(self):
         data = dict()
         data['name'] = self.name
         data['blobs'] = list()
         for blob in self.blobs:
             data['blobs'].append(blob.save())
-        data['trees'] = [tree.sha for tree in self.trees]
-        return json.dump(data, sort_keys=True, ident=4)
+        data['trees'] = list()
+        for tree in self.trees:
+            data['trees'].append(tree.save())
+        return data

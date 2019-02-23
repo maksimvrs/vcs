@@ -1,15 +1,13 @@
 class ChangeType:
     insert = 0
     delete = 1
-    replace = 2
 
 
 class Change:
-    def __init__(self, change_type: ChangeType, index: int, data_before: str, data_after: str):
+    def __init__(self, change_type: ChangeType, index: int, data):
         self._type = change_type
         self._index = index
-        self._data_before = data_before
-        self._data_after = data_after
+        self._data = data
 
     @property
     def type(self):
@@ -20,12 +18,8 @@ class Change:
         return self._index
 
     @property
-    def data_before(self):
-        return self._data_before
-
-    @property
-    def data_after(self):
-        return self._data_after
+    def data(self):
+        return self._data
 
 
 class Changes:
@@ -51,40 +45,19 @@ class Changes:
         if data is None:
             data = ""
         result = list(data)
-        for change in reversed(self._changes):
-            if change.type == ChangeType.insert:
-                result[change.index:change.index] = list(change.data_after)
-            elif change.type == ChangeType.delete:
-                del result[change.index:len(change.data_before)+change.index]
-            elif change.type == ChangeType.replace:
-                result[change.index:len(change.data_before)+change.index] = list(change.data_after)
-        return ''.join(result)
-
-    def roll_back(self, data):
-        """
-        Откатить изменения
-        :param data: Данные, изменения для которыз нужно откатить
-        :return: Предыдущая версия данных, с отмененными изменениями
-        """
-        if data is None:
-            data = ""
-        result = list(data)
         for change in self._changes:
             if change.type == ChangeType.insert:
-                del result[change.index:len(change.data_after)+change.index]
+                result[change.index:change.index] = list(change.data)
             elif change.type == ChangeType.delete:
-                result[change.index: change.index] = list(change.data_before)
-            elif change.type == ChangeType.replace:
-                result[change.index:len(change.data_after)+change.index] = list(change.data_before)
+                del result[change.index:change.data]
         return ''.join(result)
 
     def load(self, data):
         for change in data:
             self.add(Change(change['type'], change['index'],
-                            change['data_before'], change['data_after']))
+                            change['data']))
 
     def save(self):
         return [{'type': change.type,
                  'index': change.index,
-                 'data_before': change.data_before,
-                 'data_after': change.data_after} for change in self._changes]
+                 'data': change.apply} for change in self._changes]
