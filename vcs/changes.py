@@ -60,4 +60,4 @@ class Changes:
     def save(self):
         return [{'type': change.type,
                  'index': change.index,
-                 'data': change.apply} for change in self._changes]
+                 'data': change.data} for change in self._changes]

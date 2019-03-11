@@ -23,7 +23,7 @@ class Commit(Transform):
 
     def set(self, tree):
         self._tree = tree
-        # ToDo: Добавить вычисление хэша коммита
+        # TODO: Добавить вычисление хэша коммита
 
     def get(self):
         return self._tree
@@ -33,7 +33,7 @@ class Commit(Transform):
             current_tree = self._tree
         if isinstance(tree, Transform):
             # Применить коммит к другому коммиту или трансформатору
-            # ToDo: Преобразование к трасформатору
+            # TODO: Преобразование к трасформатору
             pass
         else:
             # Применить коммит к данным
@@ -67,6 +67,5 @@ class Commit(Transform):
         data['parent'] = self.parent
         data['author'] = self.author
         data['comment'] = self.comment
-        data['sha'] = self.sha.hexdigest()
         data['tree'] = self._tree.save()
         return json.dumps(data, sort_keys=True, indent=4)
