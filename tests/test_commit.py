@@ -24,3 +24,7 @@ class CommitTests(unittest.TestCase):
 
         self.assertEqual(result.blobs[0].name, 'README.md')
         self.assertEqual(result.blobs[0].data, 'Test program')
+
+
+if __name__ == '__main__':
+    unittest.main()

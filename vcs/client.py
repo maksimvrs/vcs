@@ -41,11 +41,9 @@ class Client:
     @staticmethod
     def add(file, directory=os.getcwd()):
         Client.check_repo()
-        print(os.path.join(directory, file))
         if not os.path.exists(os.path.join(directory, file)):
             raise AddError('File ' + file + ' does not exist.')
         path = os.path.relpath(os.path.abspath(os.path.join(directory, file)), directory)
-        print(path)
         with open(os.path.join(directory, Client.vcs_path(), 'INDEXING'), 'r+') as f:
             # if e:
             #     raise AddError('Repository structure broken. INDEXING file not found.')
@@ -74,6 +72,7 @@ class Client:
         commits.append(commit)
         if len(commits) == 0:
             return None
+        commits.reverse()
         commits[0] = commits[0].apply()
         return reduce(lambda a, x: x.apply(a), commits)
 
@@ -112,6 +111,7 @@ class Client:
 
                     fd = open(os.path.join(directory, path), 'r')
                     data = fd.read()
+                    fd.close()
 
                     last_data = None
                     if last_tree is not None:
@@ -119,18 +119,59 @@ class Client:
                         if len(last_data) > 0:
                             last_data = last_data[0]
 
-                    tree.blobs.append(Blob(file, hashlib.sha1(data.encode()), len(data), Diff.diff(last_data.data,
-                                                                                                   data)))
+                    tree.blobs.append(Blob(file, hashlib.sha1(data.encode()), len(data),
+                                           Diff.diff(None if last_data is None else last_data.data, data)))
             commit = Commit(Client.get_current_sha(directory), author, comment)
             commit.set(tree)
             Client.save_commit(commit, directory)
-            Client.set_current_sha(commit.sha.hexdigest(), directory)
+            Client.set_current_sha(commit.sha, directory)
             if Client.get_head_sha(directory) is None:
-                Client.set_head_sha(commit.sha.hexdigest(), directory)
+                Client.set_head_sha(commit.sha, directory)
+        return commit.sha
 
     @staticmethod
-    def reset(commit_sha):
-        pass
+    def reset(commit_sha, directory=os.getcwd()):
+        tree = Client.get(commit_sha, directory)
+        current_tree = Client.get(Client.get_current_sha(directory), directory)
+        Client.remove(current_tree, directory)
+        Client.write(tree, directory)
+
+    @staticmethod
+    def remove(tree, directory=os.getcwd()):
+        for blob in tree.blobs:
+            path = os.path.join(directory, tree.name, blob.name)
+            if os.path.exists(path) and os.path.isfile(path):
+                try:
+                    os.remove(path)
+                except OSError as e:
+                    raise DataError(str(e))
+        for t in tree.trees:
+            Client.remove(t, os.path.join(directory, tree.name))
+            path_dir = os.path.join(directory, tree.name, t.name)
+            if os.path.exists(path_dir) and os.path.isdir(path_dir) and len(os.listdir(path_dir)) == 0:
+                os.rmdir(path_dir)
+
+    @staticmethod
+    def write(tree, directory=os.getcwd()):
+        for blob in tree.blobs:
+            path = os.path.join(directory, tree.name, blob.name)
+            if os.path.exists(path) and os.path.isfile(path):
+                try:
+                    os.remove(path)
+                except OSError as e:
+                    raise DataError(str(e))
+            fd = open(path, 'w')
+            fd.write(blob.data)
+            fd.close()
+        for t in tree.trees:
+            path_dir = os.path.join(directory, tree.name, t.name)
+            if os.path.exists(path_dir):
+                if os.path.isfile(path_dir):
+                    os.remove(path_dir)
+                    os.mkdir(path_dir)
+            else:
+                os.mkdir(path_dir)
+            Client.write(t, os.path.join(directory, tree.name))
 
     @staticmethod
     def checkout(sha):
@@ -172,9 +213,9 @@ class Client:
 
     @staticmethod
     def save_commit(commit, directory=os.getcwd()):
-        work_path = os.path.join(directory, Client.vcs_path(), 'commits', commit.sha.hexdigest())
+        work_path = os.path.join(directory, Client.vcs_path(), 'commits', commit.sha)
         if os.path.exists(work_path):
-            raise DataError('Commit ' + commit.sha.hexdigest() + ' exist')
+            raise DataError('Commit ' + commit.sha + ' exist')
         with open(work_path, 'w') as f:
             # if e:
             #     raise DataError('File ' + work_path + ' creating error.')

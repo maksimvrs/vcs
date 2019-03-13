@@ -21,3 +21,7 @@ class ChangesTests(unittest.TestCase):
     def test_init(self):
         changes = Diff.diff(None, "Hello!")
         self.assertEqual(changes.apply(None), "Hello!")
+
+
+if __name__ == '__main__':
+    unittest.main()

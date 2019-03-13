@@ -19,7 +19,7 @@ class Commit(Transform):
         result.update(self.author.encode())
         result.update(self.comment.encode())
         result.update(self._tree.sha.digest())
-        return result
+        return result.hexdigest()
 
     def set(self, tree):
         self._tree = tree

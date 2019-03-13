@@ -32,3 +32,8 @@ class CommitsTreeTests(unittest.TestCase):
 
         self.assertEqual(commits_tree.get_data(commit_2.sha).blobs[0].name, 'README.md')
         self.assertEqual(commits_tree.get_data(commit_2.sha).blobs[0].apply(), 'Test program')
+
+
+if __name__ == '__main__':
+    unittest.main()
+
