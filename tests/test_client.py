@@ -20,9 +20,8 @@ class ClientTests(unittest.TestCase):
         os.mkdir(self.PATH)
 
     def tearDown(self):
-        # if os.path.exists(self.PATH) and os.path.isdir(self.PATH):
-        #     shutil.rmtree(self.PATH)
-        pass
+        if os.path.exists(self.PATH) and os.path.isdir(self.PATH):
+            shutil.rmtree(self.PATH)
 
     def test_init(self):
         Client.init(self.PATH)
@@ -149,8 +148,6 @@ class ClientTests(unittest.TestCase):
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('')
         f.close()
-
-        print(Client.log(self.PATH))
 
 
 if __name__ == '__main__':
