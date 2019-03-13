@@ -18,7 +18,7 @@ class Commit(Transform):
         result = hashlib.sha1()
         result.update(self.author.encode())
         result.update(self.comment.encode())
-        result.update(self._tree.sha.digest())
+        result.update(self._tree.sha.encode())
         return result.hexdigest()
 
     def set(self, tree):

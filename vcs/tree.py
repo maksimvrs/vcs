@@ -18,10 +18,10 @@ class Tree:
     def sha(self):
         result = hashlib.sha1()
         for blob in self.blobs:
-            result.update(blob.sha.digest())
+            result.update(blob.sha.encode())
         for tree in self.trees:
-            result.update(tree.sha)
-        return result
+            result.update(tree.sha.encode())
+        return result.hexdigest()
 
     def save(self):
         data = dict()

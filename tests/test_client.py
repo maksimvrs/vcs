@@ -20,8 +20,9 @@ class ClientTests(unittest.TestCase):
         os.mkdir(self.PATH)
 
     def tearDown(self):
-        if os.path.exists(self.PATH) and os.path.isdir(self.PATH):
-            shutil.rmtree(self.PATH)
+        # if os.path.exists(self.PATH) and os.path.isdir(self.PATH):
+        #     shutil.rmtree(self.PATH)
+        pass
 
     def test_init(self):
         Client.init(self.PATH)
@@ -119,7 +120,6 @@ class ClientTests(unittest.TestCase):
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('')
         f.close()
-        Client.add('README.md', self.PATH)
 
         Client.reset(sha, self.PATH)
 
@@ -128,6 +128,29 @@ class ClientTests(unittest.TestCase):
         f.close()
 
         self.assertEqual(data, 'New Hello, world!!!')
+
+    def test_log(self):
+        Client.init(self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('Hello, world!!!')
+        f.close()
+        Client.add('README.md', self.PATH)
+
+        Client.commit('Maksim', 'Inital commit', self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('New Hello, world!!!')
+        f.close()
+        Client.add('README.md', self.PATH)
+
+        Client.commit('Maksim', 'Second commit', self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('')
+        f.close()
+
+        print(Client.log(self.PATH))
 
 
 if __name__ == '__main__':

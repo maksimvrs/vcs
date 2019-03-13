@@ -33,6 +33,6 @@ class Blob:
 
     def save(self):
         return {'name': self.name,
-                'sha': self.sha.hexdigest(),
+                'sha': self.sha,
                 'size': self.size,
                 'changes': self.changes.save()}

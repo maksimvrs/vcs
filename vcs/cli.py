@@ -35,3 +35,14 @@ def commit(message):
 def reset(commit_sha):
     """Reset last commit"""
     Client.reset(commit_sha)
+
+
+@main.command()
+def log():
+    """Reset last commit"""
+    for commit_log in Client.log():
+        click.echo('-' * 30)
+        click.echo('Commit: ' + commit_log[0])
+        click.echo('Author: ' + commit_log[1])
+        click.echo('Message: ' + commit_log[2])
+        click.echo('-' * 30)

@@ -119,7 +119,7 @@ class Client:
                         if len(last_data) > 0:
                             last_data = last_data[0]
 
-                    tree.blobs.append(Blob(file, hashlib.sha1(data.encode()), len(data),
+                    tree.blobs.append(Blob(file, hashlib.sha1(data.encode()).hexdigest(), len(data),
                                            Diff.diff(None if last_data is None else last_data.data, data)))
             commit = Commit(Client.get_current_sha(directory), author, comment)
             commit.set(tree)
@@ -127,6 +127,8 @@ class Client:
             Client.set_current_sha(commit.sha, directory)
             if Client.get_head_sha(directory) is None:
                 Client.set_head_sha(commit.sha, directory)
+            with open(os.path.join(directory, Client.vcs_path(), 'INDEXING'), 'r+') as f:
+                f.truncate(0)
         return commit.sha
 
     @staticmethod
@@ -135,6 +137,15 @@ class Client:
         current_tree = Client.get(Client.get_current_sha(directory), directory)
         Client.remove(current_tree, directory)
         Client.write(tree, directory)
+
+    @staticmethod
+    def log(directory=os.getcwd()):
+        log_commits = list()
+        commit = Client.load_commit(Client.get_current_sha(directory), directory)
+        while commit is not None:
+            log_commits.append((commit.sha, commit.author, commit.comment))
+            commit = None if commit.parent is None else Client.load_commit(commit.parent, directory)
+        return reversed(log_commits)
 
     @staticmethod
     def remove(tree, directory=os.getcwd()):
