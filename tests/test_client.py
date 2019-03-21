@@ -24,14 +24,14 @@ class ClientTests(unittest.TestCase):
             shutil.rmtree(self.PATH)
 
     def test_init(self):
-        Client.init(self.PATH)
+        Client.init(directory=self.PATH)
 
     def test_add(self):
-        Client.init(self.PATH)
+        Client.init(directory=self.PATH)
 
         open(os.path.join(self.PATH, 'README.md'), 'w').close()
 
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
         f = open(os.path.join(self.PATH, Client.vcs_path(), 'INDEXING'), 'r')
         indexing_files = json.load(f)
@@ -40,7 +40,7 @@ class ClientTests(unittest.TestCase):
         self.assertTrue('README.md' in indexing_files)
 
     def test_commit(self):
-        Client.init(self.PATH)
+        Client.init(directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
 
@@ -48,9 +48,9 @@ class ClientTests(unittest.TestCase):
 
         f.close()
 
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        Client.commit('Maksim', 'Inital commit', self.PATH)
+        Client.commit('Maksim', 'Inital commit', directory=self.PATH)
 
     def test_second_commit(self):
         Client.init(self.PATH)
@@ -58,16 +58,16 @@ class ClientTests(unittest.TestCase):
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('Hello, world!!!')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        Client.commit('Maksim', 'Inital commit', self.PATH)
+        Client.commit('Maksim', 'Inital commit', directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('New Hello, world!!!')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        Client.commit('Maksim', 'Second commit', self.PATH)
+        Client.commit('Maksim', 'Second commit', directory=self.PATH)
 
     def test_reset(self):
         Client.init(self.PATH)
@@ -75,23 +75,23 @@ class ClientTests(unittest.TestCase):
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('Hello, world!!!')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        sha = Client.commit('Maksim', 'Inital commit', self.PATH)
+        sha = Client.commit('Maksim', 'Inital commit', directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('New Hello, world!!!')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        Client.commit('Maksim', 'Second commit', self.PATH)
+        Client.commit('Maksim', 'Second commit', directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        Client.reset(sha, self.PATH)
+        Client.reset(sha, directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'r')
         data = f.read()
@@ -100,27 +100,27 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(data, 'Hello, world!!!')
 
     def test_reset_second(self):
-        Client.init(self.PATH)
+        Client.init(directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('Hello, world!!!')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        Client.commit('Maksim', 'Inital commit', self.PATH)
+        Client.commit('Maksim', 'Inital commit', directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('New Hello, world!!!')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        sha = Client.commit('Maksim', 'Second commit', self.PATH)
+        sha = Client.commit('Maksim', 'Second commit', directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('')
         f.close()
 
-        Client.reset(sha, self.PATH)
+        Client.reset(sha, directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'r')
         data = f.read()
@@ -129,21 +129,21 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(data, 'New Hello, world!!!')
 
     def test_log(self):
-        Client.init(self.PATH)
+        Client.init(directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('Hello, world!!!')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        Client.commit('Maksim', 'Inital commit', self.PATH)
+        Client.commit('Maksim', 'Inital commit', directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('New Hello, world!!!')
         f.close()
-        Client.add('README.md', self.PATH)
+        Client.add('README.md', directory=self.PATH)
 
-        Client.commit('Maksim', 'Second commit', self.PATH)
+        Client.commit('Maksim', 'Second commit', directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('')

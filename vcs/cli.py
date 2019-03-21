@@ -1,6 +1,7 @@
 import click
 
 from vcs.client import Client
+from vcs.exceptions import CustomException
 
 
 @click.group()
@@ -12,37 +13,55 @@ def main():
 @main.command()
 def init():
     """Initialize the repository"""
-    Client.init()
+    try:
+        Client.init()
+    except CustomException as e:
+        click.echo(e)
 
 
 @main.command()
 @click.argument('files', nargs=-1, type=click.Path())
 def add(files):
     """Add files to be indexed"""
-    for file in files:
-        Client.add(file)
+    try:
+        for file in files:
+            Client.add(file)
+    except CustomException as e:
+        click.echo(e)
 
 
 @main.command()
 @click.option('--message', '-m', help='Commit message')
-def commit(message):
+@click.option('--tag', '-t', help='Tag')
+def commit(message, tag):
     """Commit files"""
-    click.echo(Client.commit('User', message))
+    try:
+        click.echo(Client.commit('User', message, tag))
+    except CustomException as e:
+        click.echo(e)
 
 
 @main.command()
 @click.argument('commit_sha', nargs=1, type=click.STRING)
 def reset(commit_sha):
     """Reset last commit"""
-    Client.reset(commit_sha)
+    try:
+        Client.reset(commit_sha)
+    except CustomException as e:
+        click.echo(e)
 
 
 @main.command()
 def log():
     """Reset last commit"""
-    for commit_log in Client.log():
-        click.echo('-' * 30)
-        click.echo('Commit: ' + commit_log[0])
-        click.echo('Author: ' + commit_log[1])
-        click.echo('Message: ' + commit_log[2])
-        click.echo('-' * 30)
+    try:
+        for commit_log in Client.log():
+            click.echo('-' * 30)
+            click.echo('Commit: ' + commit_log[0])
+            click.echo('Author: ' + commit_log[1])
+            click.echo('Message: ' + commit_log[2])
+            if commit_log[3] is not None:
+                click.echo('Tag: ' + commit_log[3])
+            click.echo('-' * 30)
+    except CustomException as e:
+        click.echo(e)

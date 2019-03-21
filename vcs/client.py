@@ -77,7 +77,7 @@ class Client:
         return reduce(lambda a, x: x.apply(a), commits)
 
     @staticmethod
-    def commit(author, comment, directory=os.getcwd()):
+    def commit(author, comment, tag=None, directory=os.getcwd()):
         with open(os.path.join(directory, Client.vcs_path(), 'INDEXING'), 'r') as f:
             # if e:
             #     raise AddError('Repository structure broken. INDEXING file not found.')
@@ -121,7 +121,7 @@ class Client:
 
                     tree.blobs.append(Blob(file, hashlib.sha1(data.encode()).hexdigest(), len(data),
                                            Diff.diff(None if last_data is None else last_data.data, data)))
-            commit = Commit(Client.get_current_sha(directory), author, comment)
+            commit = Commit(Client.get_current_sha(directory), author, comment, tag)
             commit.set(tree)
             Client.save_commit(commit, directory)
             Client.set_current_sha(commit.sha, directory)
@@ -143,7 +143,7 @@ class Client:
         log_commits = list()
         commit = Client.load_commit(Client.get_current_sha(directory), directory)
         while commit is not None:
-            log_commits.append((commit.sha, commit.author, commit.comment))
+            log_commits.append((commit.sha, commit.author, commit.comment, commit.tag))
             commit = None if commit.parent is None else Client.load_commit(commit.parent, directory)
         return reversed(log_commits)
 
@@ -250,7 +250,8 @@ class Client:
             except ValueError:
                 return None
             try:
-                commit = Commit(commit_json['parent'], commit_json['author'], commit_json['comment'])
+                commit = Commit(commit_json['parent'], commit_json['author'], commit_json['comment'],
+                                commit_json.get('tag'))
                 tree = Tree()
                 tree.load(commit_json['tree'])
                 commit.set(tree)

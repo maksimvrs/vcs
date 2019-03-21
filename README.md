@@ -17,7 +17,7 @@ python3 -m vcs add REDME.md
 
 ## Commit changes
 ```bash
-python3 -m vcs commit -m 'Initial commit'
+python3 -m vcs commit -m 'Initial commit' -t 'v0.1'
 ```
 
 ## Go to commit

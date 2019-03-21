@@ -1,16 +1,16 @@
 import hashlib
 import json
 
-from vcs.blob import Blob
 from vcs.transform import Transform
 from vcs.tree import Tree
 
 
 class Commit(Transform):
-    def __init__(self, parent, author, comment):
+    def __init__(self, parent, author, comment, tag=None):
         self.parent = parent
         self.author = author
         self.comment = comment
+        self.tag = tag
         self._tree = None
 
     @property
@@ -67,5 +67,6 @@ class Commit(Transform):
         data['parent'] = self.parent
         data['author'] = self.author
         data['comment'] = self.comment
+        data['tag'] = self.comment
         data['tree'] = self._tree.save()
         return json.dumps(data, sort_keys=True, indent=4)
