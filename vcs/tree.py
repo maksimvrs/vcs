@@ -2,13 +2,14 @@ import hashlib
 
 from vcs.blob import Blob
 from vcs.changes import Changes
-from vcs.exceptions import *
+from vcs.exceptions import DataError
 
 
 class Tree:
     """
     Объект представления директории, находящейся в репозитории
     """
+
     def __init__(self, name=None):
         self.name = name
         self.blobs = list()
@@ -43,7 +44,10 @@ class Tree:
                 try:
                     changes = Changes()
                     changes.load(blob['changes'])
-                    self.blobs.append(Blob(blob['name'], blob['sha'], blob['size'], changes))
+                    self.blobs.append(Blob(blob['name'],
+                                           blob['sha'],
+                                           blob['size'],
+                                           changes))
                 except KeyError as e:
                     raise DataError('Key ' + str(e) + ' not found')
         if 'trees' in data:

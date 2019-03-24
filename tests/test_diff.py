@@ -8,7 +8,8 @@ class DiffTests(unittest.TestCase):
         changes = Diff.diff('qabxcd', 'abycdf')
         print(changes.apply('qabxcd'))
         for change in changes._changes:
-            print(change.index, 'insert' if change.type == 0 else 'delete', change.data)
+            print(change.index,
+                  'insert' if change.type == 0 else 'delete', change.data)
 
 
 if __name__ == '__main__':

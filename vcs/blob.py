@@ -2,6 +2,7 @@ class Blob:
     """
     Объект представления файла, находящегося в репозитории, в контексте коммита
     """
+
     def __init__(self, name, sha, size, changes=None):
         """
         :param name: Имя файла

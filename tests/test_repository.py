@@ -8,7 +8,6 @@ from vcs.blob import Blob
 from vcs.commit import Commit
 from vcs.diff import Diff
 from vcs.repository import Repository
-from vcs.client import  Client
 from vcs.tree import Tree
 
 
@@ -25,9 +24,8 @@ class RepositoryTests(unittest.TestCase):
         os.mkdir(self.PATH)
 
     def tearDown(self):
-        pass
-        # if os.path.exists(self.PATH) and os.path.isdir(self.PATH):
-        #     shutil.rmtree(self.PATH)
+        if os.path.exists(self.PATH) and os.path.isdir(self.PATH):
+            shutil.rmtree(self.PATH)
 
     def test_init(self):
         Repository.init(directory=self.PATH)
@@ -39,7 +37,7 @@ class RepositoryTests(unittest.TestCase):
 
         Repository.add_indexing('README.md', directory=self.PATH)
 
-        f = open(os.path.join(self.PATH, Client.vcs_path(), 'INDEXING'), 'r')
+        f = open(os.path.join(Repository.vcs_path(self.PATH), 'INDEXING'), 'r')
         indexing_files = json.load(f)
         indexing_files = indexing_files['files']
 
@@ -76,13 +74,16 @@ class RepositoryTests(unittest.TestCase):
         Repository.add_indexing('README.md', directory=self.PATH)
 
         tree = Tree('/')
-        tree.blobs.append(Blob('README.md', '1q', 0, Diff.diff(None, 'Hello, world!!!')))
+        tree.blobs.append(Blob('README.md', '1q', 0,
+                               Diff.diff(None, 'Hello, world!!!')))
         commit = Commit(None, 'Maksim', 'Initial commit')
         commit.set(tree)
 
         Repository.save_commit('master', commit, directory=self.PATH)
         Repository.set_head_commit('master', commit.sha, directory=self.PATH)
-        Repository.set_current_commit('master', commit.sha, directory=self.PATH)
+        Repository.set_current_commit('master',
+                                      commit.sha,
+                                      directory=self.PATH)
 
     def test_commit_to_branch(self):
         Repository.init(directory=self.PATH)
@@ -98,13 +99,16 @@ class RepositoryTests(unittest.TestCase):
         Repository.add_indexing('README.md', directory=self.PATH)
 
         tree = Tree('/')
-        tree.blobs.append(Blob('README.md', '1q', 0, Diff.diff(None, 'Hello, world!!!')))
+        tree.blobs.append(Blob('README.md', '1q', 0,
+                               Diff.diff(None, 'Hello, world!!!')))
         commit = Commit(None, 'Maksim', 'Initial commit')
         commit.set(tree)
 
         Repository.save_commit('develop', commit, directory=self.PATH)
         Repository.set_head_commit('develop', commit.sha, directory=self.PATH)
-        Repository.set_current_commit('develop', commit.sha, directory=self.PATH)
+        Repository.set_current_commit('develop',
+                                      commit.sha,
+                                      directory=self.PATH)
 
 
 if __name__ == '__main__':

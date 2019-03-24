@@ -9,10 +9,12 @@ from vcs.diff import Diff
 class CommitTests(unittest.TestCase):
     def test_one_blob(self):
         tree_1 = Tree('/')
-        tree_1.blobs.append(Blob('README.md', '1q', 0, Diff.diff(None, 'Hello, world!!!')))
+        tree_1.blobs.append(Blob('README.md', '1q', 0,
+                                 Diff.diff(None, 'Hello, world!!!')))
 
         tree_2 = Tree('/')
-        tree_2.blobs.append(Blob('README.md', '2q', 0, Diff.diff('Hello, world!!!', 'Test program')))
+        tree_2.blobs.append(Blob('README.md', '2q', 0,
+                                 Diff.diff('Hello, world!!!', 'Test program')))
 
         commit_1 = Commit(None, 'Maksim', 'Initial commit')
         commit_1.set(tree_1)
@@ -27,10 +29,12 @@ class CommitTests(unittest.TestCase):
 
     def test_subdirs(self):
         tree = Tree('/')
-        tree.blobs.append(Blob('README.md', '1q', 0, Diff.diff(None, 'Hello, world!!!')))
+        tree.blobs.append(Blob('README.md', '1q', 0,
+                               Diff.diff(None, 'Hello, world!!!')))
 
         sub_tree = Tree('src/')
-        sub_tree.blobs.append(Blob('main.txt', '2q', 0, Diff.diff(None, 'Main src')))
+        sub_tree.blobs.append(Blob('main.txt', '2q', 0,
+                                   Diff.diff(None, 'Main src')))
 
         tree.trees.append(sub_tree)
 

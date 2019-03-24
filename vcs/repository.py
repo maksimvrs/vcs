@@ -3,7 +3,7 @@ import os
 import shutil
 
 from vcs.commit import Commit
-from vcs.exceptions import *
+from vcs.exceptions import InitError, RepoError, DataError, AddError
 from vcs.tree import Tree
 
 
@@ -14,7 +14,53 @@ class Repository:
 
     @staticmethod
     def check_repo(directory=os.getcwd()):
-        return os.path.exists(Repository.vcs_path(directory))
+        if not os.path.exists(Repository.vcs_path(directory)):
+            raise RepoError('VCS path ' + Repository.vcs_path(directory)
+                            + 'not found.')
+        if not os.path.exists(os.path.join(Repository.vcs_path(directory),
+                                           'INDEXING')):
+            raise RepoError('INDEXING file not found.')
+        if not os.path.isfile(os.path.join(Repository.vcs_path(directory),
+                                           'INDEXING')):
+            raise RepoError('INDEXING it is not a file.')
+        if not os.path.exists(os.path.join(Repository.vcs_path(directory),
+                                           'BRANCH')):
+            raise RepoError('BRANCH file not found.')
+        if not os.path.isfile(os.path.join(Repository.vcs_path(directory),
+                                           'BRANCH')):
+            raise RepoError('BRANCH it is not a file.')
+        if not os.path.exists(os.path.join(Repository.vcs_path(directory),
+                                           'commits')):
+            raise RepoError('commits path not found.')
+        if not os.path.isdir(os.path.join(Repository.vcs_path(directory),
+                                          'commits')):
+            raise RepoError('commits it is not a directory.')
+
+    @staticmethod
+    def check_branch(branch, directory=os.getcwd()):
+        work_path = os.path.join(directory,
+                                 Repository.vcs_path(directory),
+                                 'commits',
+                                 branch)
+        if not os.path.exists(work_path):
+            raise RepoError(branch + ': Branch path not found.')
+        if not os.path.isdir(work_path):
+            raise RepoError(branch + ' branch path it is not a directory')
+        if not os.path.exists(os.path.join(work_path, 'HEAD')):
+            raise RepoError('HEAD file in ' + branch + ' branch not found.')
+        if not os.path.isfile(os.path.join(work_path, 'HEAD')):
+            raise RepoError('HEAD in ' + branch + ' branch it is '
+                            + 'not a file.')
+        if not os.path.exists(os.path.join(work_path, 'CURRENT')):
+            raise RepoError('CURRENT file in ' + branch + ' branch not found.')
+        if not os.path.isfile(os.path.join(work_path, 'CURRENT')):
+            raise RepoError('CURRENT in ' + branch + ' branch it is '
+                            + 'not a file.')
+        if not os.path.exists(os.path.join(work_path, 'PARENT')):
+            raise RepoError('PARENT file in ' + branch + ' branch not found.')
+        if not os.path.isfile(os.path.join(work_path, 'PARENT')):
+            raise RepoError('PARENT in ' + branch + ' branch it is '
+                            + 'not a file.')
 
     @staticmethod
     def init(directory=os.getcwd()):
@@ -37,11 +83,13 @@ class Repository:
 
     @staticmethod
     def add_indexing(file, directory=os.getcwd()):
-        Repository.check_repo()
+        Repository.check_repo(directory)
         if not os.path.exists(os.path.join(directory, file)):
             raise AddError('File ' + file + ' does not exist.')
-        path = os.path.relpath(os.path.abspath(os.path.join(directory, file)), directory)
-        with open(os.path.join(Repository.vcs_path(directory), 'INDEXING'), 'r+') as f:
+        path = os.path.relpath(os.path.abspath(os.path.join(directory, file)),
+                               directory)
+        with open(os.path.join(Repository.vcs_path(directory), 'INDEXING'),
+                  'r+') as f:
             try:
                 indexing_files = json.load(f)
             except ValueError:
@@ -57,8 +105,9 @@ class Repository:
 
     @staticmethod
     def get_indexing(directory=os.getcwd()):
-        Repository.check_repo()
-        with open(os.path.join(Repository.vcs_path(directory), 'INDEXING'), 'r+') as f:
+        Repository.check_repo(directory)
+        with open(os.path.join(Repository.vcs_path(directory), 'INDEXING'),
+                  'r+') as f:
             try:
                 indexing_files = json.load(f)
             except ValueError:
@@ -67,20 +116,25 @@ class Repository:
 
     @staticmethod
     def clear_indexing(directory=os.getcwd()):
-        Repository.check_repo()
-        with open(os.path.join(Repository.vcs_path(directory), 'INDEXING'), 'r+') as f:
+        Repository.check_repo(directory)
+        with open(os.path.join(Repository.vcs_path(directory), 'INDEXING'),
+                  'r+') as f:
             f.truncate(0)
 
     @staticmethod
     def get_current_branch(directory=os.getcwd()):
-        with open(os.path.join(Repository.vcs_path(directory), 'BRANCH'), 'r') as f:
+        Repository.check_repo(directory)
+        with open(os.path.join(Repository.vcs_path(directory), 'BRANCH'),
+                  'r') as f:
             return f.read()
 
     @staticmethod
     def set_current_branch(branch, directory=os.getcwd()):
+        Repository.check_repo(directory)
         if branch not in Repository.get_branches(directory):
             raise DataError('Branch ' + branch + 'not found')
-        with open(os.path.join(Repository.vcs_path(directory), 'BRANCH'), 'w') as f:
+        with open(os.path.join(Repository.vcs_path(directory), 'BRANCH'),
+                  'w') as f:
             f.seek(0)
             f.write(branch)
             f.truncate()
@@ -97,7 +151,8 @@ class Repository:
     @staticmethod
     def add_branch(name, directory=os.getcwd()):
         Repository.check_repo(directory)
-        work_path = os.path.join(Repository.vcs_path(directory), 'commits', name)
+        work_path = os.path.join(
+            Repository.vcs_path(directory), 'commits', name)
         if os.path.exists(work_path):
             raise DataError('Branch ' + name + 'already exist')
         os.makedirs(os.path.join(work_path))
@@ -107,54 +162,87 @@ class Repository:
 
     @staticmethod
     def get_head_commit(branch, directory=os.getcwd()):
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
         if branch not in Repository.get_branches(directory):
             raise DataError('Branch ' + branch + 'not found')
-        with open(os.path.join(Repository.vcs_path(directory), 'commits', branch, 'HEAD'), 'r') as f:
+        with open(os.path.join(Repository.vcs_path(directory),
+                               'commits',
+                               branch,
+                               'HEAD'), 'r') as f:
             commit = f.read()
             return None if commit == '' else commit
 
     @staticmethod
     def set_head_commit(branch, commit, directory=os.getcwd()):
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
         if branch not in Repository.get_branches(directory):
             raise DataError('Branch ' + branch + 'not found')
-        with open(os.path.join(Repository.vcs_path(directory), 'commits', branch, 'HEAD'), 'w') as f:
+        with open(os.path.join(Repository.vcs_path(directory),
+                               'commits',
+                               branch,
+                               'HEAD'), 'w') as f:
             f.seek(0)
             f.write(commit)
             f.truncate()
 
     @staticmethod
     def get_current_commit(branch, directory=os.getcwd()):
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
         if branch not in Repository.get_branches(directory):
             raise DataError('Branch ' + branch + 'not found')
-        with open(os.path.join(Repository.vcs_path(directory), 'commits', branch, 'CURRENT'), 'r') as f:
+        with open(os.path.join(Repository.vcs_path(directory),
+                               'commits',
+                               branch,
+                               'CURRENT'), 'r') as f:
             commit = f.read()
             return None if commit == '' else commit
 
     @staticmethod
     def set_current_commit(branch, commit, directory=os.getcwd()):
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
         if branch not in Repository.get_branches(directory):
             raise DataError('Branch ' + branch + 'not found')
-        with open(os.path.join(Repository.vcs_path(directory), 'commits', branch, 'CURRENT'), 'w') as f:
+        with open(os.path.join(Repository.vcs_path(directory),
+                               'commits',
+                               branch,
+                               'CURRENT'), 'w') as f:
             f.seek(0)
             f.write(commit)
             f.truncate()
 
     @staticmethod
     def get_parent_branch(branch, directory=os.getcwd()):
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
         if branch not in Repository.get_branches(directory):
             raise DataError('Branch ' + branch + 'not found')
-        with open(os.path.join(Repository.vcs_path(directory), 'commits', branch, 'PARENT'), 'r') as f:
+        with open(os.path.join(Repository.vcs_path(directory),
+                               'commits',
+                               branch,
+                               'PARENT'), 'r') as f:
             try:
                 branch, commit = f.read().split(' / ')
-            except ValueError as e:
+            except ValueError:
                 return None
             return branch, (None if commit == '' else commit)
 
     @staticmethod
-    def set_parent_branch(branch, parent_branch, parent_commit, directory=os.getcwd()):
+    def set_parent_branch(branch,
+                          parent_branch,
+                          parent_commit,
+                          directory=os.getcwd()):
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
         if branch not in Repository.get_branches(directory):
             raise DataError('Branch ' + branch + 'not found')
-        with open(os.path.join(Repository.vcs_path(directory), 'commits', branch, 'PARENT'), 'w') as f:
+        with open(os.path.join(Repository.vcs_path(directory),
+                               'commits',
+                               branch,
+                               'PARENT'), 'w') as f:
             f.seek(0)
             data = parent_branch + ' / '
             if parent_commit is not None:
@@ -164,7 +252,10 @@ class Repository:
 
     @staticmethod
     def save_commit(branch, commit, directory=os.getcwd()):
-        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch, commit.sha)
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
+        work_path = os.path.join(Repository.vcs_path(
+            directory), 'commits', branch, commit.sha)
         if os.path.exists(work_path):
             raise DataError('Commit ' + commit.sha + ' exist')
         with open(work_path, 'w') as f:
@@ -175,7 +266,11 @@ class Repository:
 
     @staticmethod
     def load_commit(branch, commit, directory=os.getcwd()):
-        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch,
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
+        work_path = os.path.join(Repository.vcs_path(directory),
+                                 'commits',
+                                 branch,
                                  '' if commit is None else commit)
         if not os.path.exists(work_path):
             raise DataError('Commit not found.')
@@ -187,7 +282,9 @@ class Repository:
             except ValueError:
                 return None
             try:
-                commit = Commit(commit_json['parent'], commit_json['author'], commit_json['comment'],
+                commit = Commit(commit_json['parent'],
+                                commit_json['author'],
+                                commit_json['comment'],
                                 commit_json.get('tag'))
                 tree = Tree()
                 tree.load(commit_json['tree'])
@@ -198,16 +295,19 @@ class Repository:
 
     @staticmethod
     def clear(directory=os.getcwd()):
+        Repository.check_repo(directory)
         for file in os.listdir(directory):
             file_path = os.path.join(directory, file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
             elif not os.path.isdir(file_path) and \
-                    os.path.relpath(os.path.abspath(file_path)) != Repository.vcs_path(directory=directory):
+                    os.path.relpath(os.path.abspath(file_path)) != \
+                    Repository.vcs_path(directory=directory):
                 shutil.rmtree(file_path)
 
     @staticmethod
     def remove(tree, directory=os.getcwd()):
+        Repository.check_repo(directory)
         for blob in tree.blobs:
             path = os.path.join(directory, tree.name, blob.name)
             if os.path.exists(path) and os.path.isfile(path):
@@ -218,11 +318,14 @@ class Repository:
         for t in tree.trees:
             Repository.remove(t, os.path.join(directory, tree.name))
             path_dir = os.path.join(directory, tree.name, t.name)
-            if os.path.exists(path_dir) and os.path.isdir(path_dir) and len(os.listdir(path_dir)) == 0:
+            if os.path.exists(path_dir) and \
+               os.path.isdir(path_dir) and \
+               len(os.listdir(path_dir)) == 0:
                 os.rmdir(path_dir)
 
     @staticmethod
     def write(tree, directory=os.getcwd()):
+        Repository.check_repo(directory)
         for blob in tree.blobs:
             path = os.path.join(directory, tree.name, blob.name)
             if os.path.exists(path) and os.path.isfile(path):

@@ -4,7 +4,7 @@ class ChangeType:
 
 
 class Change:
-    def __init__(self, change_type: ChangeType, index: int, data):
+    def __init__(self, change_type, index, data):
         self._type = change_type
         self._index = index
         self._data = data
@@ -28,9 +28,12 @@ class Changes:
     """
 
     def __init__(self):
-        # Новые фрагменты: (ChangeType.insert, индекс начала нового фрагмента, данные)
-        # Удаленные фрагменты: (ChangeType.delete, индекс начала фрагмента, размер фрагмента)
-        # Измененные фрагменты: (ChangeType.replace, индекс начала фрагмента, данные)
+        # Новые фрагменты: (ChangeType.insert, индекс начала нового фрагмента,
+        #                   данные)
+        # Удаленные фрагменты: (ChangeType.delete, индекс начала фрагмента,
+        #                       размер фрагмента)
+        # Измененные фрагменты: (ChangeType.replace, индекс начала фрагмента,
+        #                        данные)
         self._changes = list()
 
     def add(self, change):

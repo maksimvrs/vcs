@@ -5,10 +5,11 @@ import shutil
 import json
 
 from vcs.client import Client
+from vcs.repository import Repository
 
 
 class ClientTests(unittest.TestCase):
-    PATH = os.path.abspath('../testRepo')
+    PATH = os.path.abspath('./testRepo/')
 
     def setUp(self):
         if os.path.exists(self.PATH):
@@ -29,11 +30,13 @@ class ClientTests(unittest.TestCase):
     def test_add(self):
         Client.init(directory=self.PATH)
 
-        open(os.path.join(self.PATH, 'README.md'), 'w').close()
+        open(os.path.join(self.PATH, 'README.md'),
+             'w').close()
 
         Client.add('README.md', directory=self.PATH)
 
-        f = open(os.path.join(self.PATH, Client.vcs_path(), 'INDEXING'), 'r')
+        f = open(os.path.join(Repository.vcs_path(self.PATH), 'INDEXING'),
+                 'r')
         indexing_files = json.load(f)
         indexing_files = indexing_files['files']
 
@@ -57,7 +60,7 @@ class ClientTests(unittest.TestCase):
             'author': 'Maksim',
             'comment': 'Inital commit',
             'parent': None,
-            'tag': 'Inital commit',
+            'tag': None,
             'tree': {
                 'blobs': [
                     {
@@ -223,7 +226,8 @@ class ClientTests(unittest.TestCase):
         f.close()
 
         Client.add('README.md', directory=self.PATH)
-        Client.commit('Maksim', 'Commit to develop branch', directory=self.PATH)
+        Client.commit('Maksim', 'Commit to develop branch',
+                      directory=self.PATH)
 
         Client.checkout('master', directory=self.PATH)
 
@@ -235,7 +239,8 @@ class ClientTests(unittest.TestCase):
         f.close()
 
         Client.add('README.md', directory=self.PATH)
-        initial_commit = Client.commit('Maksim', 'Inital commit', directory=self.PATH)
+        initial_commit = Client.commit('Maksim', 'Inital commit',
+                                       directory=self.PATH)
 
         f = open(os.path.join(self.PATH, 'README.md'), 'w')
         f.write('New Hello, World!!!')
@@ -252,7 +257,8 @@ class ClientTests(unittest.TestCase):
         f.close()
 
         Client.add('README.md', directory=self.PATH)
-        Client.commit('Maksim', 'Commit to develop branch', directory=self.PATH)
+        Client.commit('Maksim', 'Commit to develop branch',
+                      directory=self.PATH)
 
         Client.checkout('master', directory=self.PATH)
 
