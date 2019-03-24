@@ -7,7 +7,7 @@ from vcs.diff import Diff
 
 
 class CommitTests(unittest.TestCase):
-    def test_apply_one_blob(self):
+    def test_one_blob(self):
         tree_1 = Tree('/')
         tree_1.blobs.append(Blob('README.md', '1q', 0, Diff.diff(None, 'Hello, world!!!')))
 
@@ -24,6 +24,18 @@ class CommitTests(unittest.TestCase):
 
         self.assertEqual(result.blobs[0].name, 'README.md')
         self.assertEqual(result.blobs[0].data, 'Test program')
+
+    def test_subdirs(self):
+        tree = Tree('/')
+        tree.blobs.append(Blob('README.md', '1q', 0, Diff.diff(None, 'Hello, world!!!')))
+
+        sub_tree = Tree('src/')
+        sub_tree.blobs.append(Blob('main.txt', '2q', 0, Diff.diff(None, 'Main src')))
+
+        tree.trees.append(sub_tree)
+
+        commit = Commit(None, 'Maksim', 'Initial commit')
+        commit.set(tree)
 
 
 if __name__ == '__main__':

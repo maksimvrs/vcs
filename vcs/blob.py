@@ -25,6 +25,8 @@ class Blob:
         :param blob: Данные до применения изменений
         :return: Данные после применения изменений
         """
+        if self._data is not None:
+            return self._data
         if blob is not None:
             self._data = self.changes.apply(blob.data)
         else:

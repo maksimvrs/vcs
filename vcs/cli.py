@@ -52,6 +52,26 @@ def reset(commit_sha):
 
 
 @main.command()
+@click.argument('name', nargs=1, type=click.STRING)
+def branch(name):
+    """Create new branch"""
+    try:
+        Client.branch(name)
+    except CustomException as e:
+        click.echo(e)
+
+
+@main.command()
+@click.argument('branch', nargs=1, type=click.STRING)
+def checkout(branch):
+    """Switch to branch"""
+    try:
+        Client.checkout(branch)
+    except CustomException as e:
+        click.echo(e)
+
+
+@main.command()
 def log():
     """Reset last commit"""
     try:
