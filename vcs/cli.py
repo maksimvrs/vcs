@@ -16,7 +16,7 @@ def init():
     try:
         Client.init()
     except CustomException as e:
-        click.echo(e)
+        click.echo('Error: ' + str(e))
 
 
 @main.command()
@@ -27,7 +27,7 @@ def add(files):
         for file in files:
             Client.add(file)
     except CustomException as e:
-        click.echo(e)
+        click.echo('Error: ' + str(e))
 
 
 @main.command()
@@ -38,7 +38,7 @@ def commit(message, tag):
     try:
         click.echo(Client.commit('User', message, tag))
     except CustomException as e:
-        click.echo(e)
+        click.echo('Error: ' + str(e))
 
 
 @main.command()
@@ -48,7 +48,7 @@ def reset(commit_sha):
     try:
         Client.reset(commit_sha)
     except CustomException as e:
-        click.echo(e)
+        click.echo('Error: ' + str(e))
 
 
 @main.command()
@@ -58,7 +58,7 @@ def branch(name):
     try:
         Client.branch(name)
     except CustomException as e:
-        click.echo(e)
+        click.echo('Error: ' + str(e))
 
 
 @main.command()
@@ -68,7 +68,7 @@ def checkout(branch):
     try:
         Client.checkout(branch)
     except CustomException as e:
-        click.echo(e)
+        click.echo('Error: ' + str(e))
 
 
 @main.command()
@@ -84,4 +84,39 @@ def log():
                 click.echo('Tag: ' + commit_log[3])
             click.echo('-' * 30)
     except CustomException as e:
-        click.echo(e)
+        click.echo('Error: ' + str(e))
+
+
+@main.command()
+@click.argument('branch', nargs=1, type=click.STRING)
+def merge(branch):
+    """Merge branch to current"""
+    try:
+        Client.merge(branch, choise_merge)
+    except CustomException as e:
+        click.echo('Error: ' + str(e))
+
+
+def choise_merge(original, first, second):
+    """
+    :original: (branch name, value)
+    :first: (branch name, value)
+    :second: (branch name, value)
+    :return: 0 - original, 1 - first, 2 - second
+    """
+    click.echo('Original version ' + original[0] + '(0):')
+    click.echo('-----------------')
+    click.echo(original[1])
+    click.echo('-----------------')
+    click.echo('First version ' + first[0] + '(1):')
+    click.echo('-----------------')
+    click.echo(first[1])
+    click.echo('-----------------')
+    click.echo('Second version ' + second[0] + '(2):')
+    click.echo('-----------------')
+    click.echo(second[1])
+    click.echo('-----------------')
+    answer = None
+    while not (answer == 0 or answer == 1 or answer == 2):
+        answer = click.prompt('Enter version number (0/1/2)', default=1)
+    return answer

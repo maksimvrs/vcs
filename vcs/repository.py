@@ -3,7 +3,9 @@ import os
 import shutil
 
 from vcs.commit import Commit
+from vcs.diff import Diff
 from vcs.exceptions import InitError, RepoError, DataError, AddError
+from vcs.merge import MergeUnitStatus
 from vcs.tree import Tree
 
 
@@ -319,13 +321,13 @@ class Repository:
             Repository.remove(t, os.path.join(directory, tree.name))
             path_dir = os.path.join(directory, tree.name, t.name)
             if os.path.exists(path_dir) and \
-               os.path.isdir(path_dir) and \
-               len(os.listdir(path_dir)) == 0:
+                    os.path.isdir(path_dir) and \
+                    len(os.listdir(path_dir)) == 0:
                 os.rmdir(path_dir)
 
     @staticmethod
     def write(tree, directory=os.getcwd()):
-        Repository.check_repo(directory)
+        # Repository.check_repo(directory)
         for blob in tree.blobs:
             path = os.path.join(directory, tree.name, blob.name)
             if os.path.exists(path) and os.path.isfile(path):
@@ -347,3 +349,106 @@ class Repository:
             else:
                 os.mkdir(path_dir)
             Repository.write(t, os.path.join(directory, tree.name))
+
+    @staticmethod
+    def merge(original_tree, first_tree, second_tree, branch, callback, directory=os.getcwd()):
+        # Repository.check_repo(directory)
+        conflict_blobs = list(set([blob.name for blob in first_tree.blobs]) & \
+                              set([blob.name for blob in second_tree.blobs]))
+        other_blobs = list(set([blob.name for blob in first_tree.blobs]) ^ \
+                           set([blob.name for blob in second_tree.blobs]))
+
+        for blob in other_blobs:
+            assert (first_tree.name == second_tree.name)
+            path = os.path.join(directory, first_tree.name, blob)
+            if os.path.exists(path) and os.path.isfile(path):
+                try:
+                    os.remove(path)
+                except OSError as e:
+                    raise DataError(str(e))
+            data = next((b for b in first_tree.blobs + second_tree.blobs if b.name == blob)).data
+            fd = open(path, 'w+')
+            fd.seek(0)
+            fd.write(data)
+            fd.truncate()
+            fd.close()
+
+        for blob_name in conflict_blobs:
+            assert (first_tree.name == second_tree.name)
+
+            original_blob_data = None
+            for original_blob in original_tree.blobs:
+                if original_blob.name == blob_name:
+                    original_blob_data = original_blob.data
+                    break
+            if original_blob_data is None:
+                original_blob_data = ''
+
+            first_blob_data = None
+            for first_blob in first_tree.blobs:
+                if first_blob.name == blob_name:
+                    first_blob_data = first_blob.data
+                    break
+
+            second_blob_data = None
+            for second_blob in second_tree.blobs:
+                if second_blob.name == blob_name:
+                    second_blob_data = second_blob.data
+                    break
+
+            merge = Diff.diff3(original_blob_data.splitlines(),
+                               first_blob_data.splitlines(),
+                               second_blob_data.splitlines())
+            path = os.path.join(directory, first_tree.name, blob_name)
+            if os.path.exists(path) and os.path.isfile(path):
+                try:
+                    os.remove(path)
+                except OSError as e:
+                    raise DataError(str(e))
+            fd = open(path, 'w+')
+            fd.seek(0)
+            for data in merge:
+                if data.status == MergeUnitStatus.Stable:
+                    fd.write('\n'.join(data.first) + '\n')
+                elif data.status == MergeUnitStatus.Conflict:
+                    option = callback((Repository.get_current_branch(directory), '\n'.join(data.original) + '\n'),
+                                      (Repository.get_current_branch(directory), '\n'.join(data.first) + '\n'),
+                                      (branch, '\n'.join(data.second) + '\n'))
+                    if option == 0:
+                        fd.write('\n'.join(data.original) + '\n')
+                    elif option == 1:
+                        fd.write('\n'.join(data.first) + '\n')
+                    elif option == 2:
+                        fd.write('\n'.join(data.second) + '\n')
+            fd.truncate()
+            fd.close()
+
+        conflict_trees = list(set([tree.name for tree in first_tree.trees]) & \
+                              set([tree.name for tree in second_tree.trees]))
+        other_trees = list(set([tree.name for tree in first_tree.trees]) ^ \
+                           set([tree.name for tree in second_tree.trees]))
+
+        for tree in other_trees:
+            Repository.write(tree, os.path.join(directory, tree.name))
+
+        for tree in conflict_trees:
+            original_tree_data = Tree()
+            for original_t in original_tree.trees:
+                if original_t.name == tree:
+                    original_tree_data = original_t
+                    break
+
+            first_tree_data = None
+            for first_t in first_tree.trees:
+                if first_t.name == tree:
+                    first_tree_data = first_t
+                    break
+
+            second_tree_data = None
+            for second_t in second_tree.trees:
+                if second_t.name == tree:
+                    second_tree_data = second_t
+                    break
+
+            Repository.merge(original_tree_data, first_tree_data, second_tree_data,
+                             branch, callback, directory=directory)

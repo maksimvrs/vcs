@@ -13,42 +13,37 @@ from vcs.exceptions import *
 
 class Client:
     @staticmethod
+    def reset(commit_sha, directory=os.getcwd()):
+        tree = Client.get(Repository.get_current_branch(
+            directory=directory), commit_sha, directory)
+        current_tree = Client.get(
+            Repository.get_current_branch(directory=directory),
+            Repository.get_current_commit(Repository.get_current_branch(
+                directory=directory),
+                directory=directory),
+            directory=directory)
+        Repository.remove(current_tree, directory)
+        Repository.write(tree, directory)
+
+    @staticmethod
+    def log(directory=os.getcwd()):
+        log_commits = list()
+        branch = Repository.get_current_branch(directory=directory)
+        commit = Repository.load_commit(
+            branch, Repository.get_current_commit(branch))
+        while commit is not None:
+            log_commits.append(
+                (commit.sha, commit.author, commit.comment, commit.tag))
+            commit = None if commit.parent is None else Repository.load_commit(
+                commit.parent, directory)
+        return reversed(log_commits)
+    @staticmethod
     def init(directory=os.getcwd()):
         Repository.init(directory=directory)
 
     @staticmethod
     def add(file, directory=os.getcwd()):
         Repository.add_indexing(file, directory=directory)
-
-    @staticmethod
-    def get(branch, commit_sha, directory=os.getcwd()):
-        if commit_sha is None:
-            return None
-        commit = Repository.load_commit(
-            branch, commit_sha, directory=directory)
-        commits = list()
-        while commit.parent is not None:
-            commits.append(commit)
-            if Repository.get_parent_branch(
-                    branch,
-                    directory=directory) is not None and \
-                    Repository.get_parent_branch(
-                        branch,
-                        directory=directory)[1] == commit.parent:
-                branch, commit = Repository.get_parent_branch(
-                    branch, directory=directory)
-                commit = Repository.load_commit(
-                    branch, commit, directory=directory)
-            else:
-                commit = Repository.load_commit(
-                    branch, commit.parent, directory=directory)
-
-        commits.append(commit)
-        if len(commits) == 0:
-            return None
-        commits.reverse()
-        commits[0] = commits[0].apply()
-        return reduce(lambda a, x: x.apply(a), commits)
 
     @staticmethod
     def commit(author, comment, tag=None, directory=os.getcwd()):
@@ -123,32 +118,6 @@ class Client:
             Repository.set_head_commit(branch, commit.sha, directory=directory)
         Repository.clear_indexing(directory=directory)
         return commit.sha
-
-    @staticmethod
-    def reset(commit_sha, directory=os.getcwd()):
-        tree = Client.get(Repository.get_current_branch(
-            directory=directory), commit_sha, directory)
-        current_tree = Client.get(
-            Repository.get_current_branch(directory=directory),
-            Repository.get_current_commit(Repository.get_current_branch(
-                directory=directory),
-                directory=directory),
-            directory=directory)
-        Repository.remove(current_tree, directory)
-        Repository.write(tree, directory)
-
-    @staticmethod
-    def log(directory=os.getcwd()):
-        log_commits = list()
-        branch = Repository.get_current_branch(directory=directory)
-        commit = Repository.load_commit(
-            branch, Repository.get_current_commit(branch))
-        while commit is not None:
-            log_commits.append(
-                (commit.sha, commit.author, commit.comment, commit.tag))
-            commit = None if commit.parent is None else Repository.load_commit(
-                commit.parent, directory)
-        return reversed(log_commits)
 
     @staticmethod
     def branch(name, directory=os.getcwd()):

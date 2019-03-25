@@ -35,6 +35,11 @@ python3 -m vcs branch develop
 python3 -m vcs checkout develop
 ```
 
+## Merge
+```bash
+python3 -m vcs merge develop
+```
+
 ## Get log
 ```bash
 python3 -m vcs log

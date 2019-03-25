@@ -270,6 +270,113 @@ class ClientTests(unittest.TestCase):
 
         self.assertEqual(data, 'Hello, World from developer!!!')
 
+    def test_merge(self):
+        Client.init(directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello')
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.commit('Maksim', 'Inital commit', directory=self.PATH)
+
+        Client.branch('develop', directory=self.PATH)
+        Client.checkout('develop', directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello\nuser')
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.commit('Maksim', 'Commit to develop branch',
+                      directory=self.PATH)
+
+        Client.checkout('master', directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello\nworld')
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.commit('Maksim', 'second commit', directory=self.PATH)
+
+        Client.merge('develop', lambda a, b, c: 1, directory=self.PATH)
+
+    def test_merge_subdir(self):
+        Client.init(directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello')
+        f.close()
+
+        f = open('./original_file.txt', 'r')
+        data = f.read()
+        f.close()
+
+        os.mkdir(os.path.join(self.PATH, 'src'))
+        f = open(os.path.join(self.PATH, 'src', 'main.txt'), 'w')
+        f.write(data)
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.add('src/main.txt', directory=self.PATH)
+        Client.commit('Maksim', 'Inital commit', directory=self.PATH)
+
+        Client.branch('develop', directory=self.PATH)
+        Client.checkout('develop', directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello\nuser')
+        f.close()
+
+        f = open('./first_file.txt', 'r')
+        data = f.read()
+        f.close()
+
+        f = open(os.path.join(self.PATH, 'src', 'main.txt'), 'w')
+        f.write(data)
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.add('src/main.txt', directory=self.PATH)
+        Client.commit('Maksim', 'Commit to develop branch',
+                      directory=self.PATH)
+
+        Client.checkout('master', directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello\nworld')
+        f.close()
+
+        f = open('./second_file.txt', 'r')
+        data = f.read()
+        f.close()
+
+        f = open(os.path.join(self.PATH, 'src', 'main.txt'), 'w')
+        f.write(data)
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.add('src/main.txt', directory=self.PATH)
+        Client.commit('Maksim', 'second commit', directory=self.PATH)
+
+        # Client.merge('develop', self.choise, directory=self.PATH)
+
+    def choise(self, original, first, second):
+        print('Original version ' + original[0] + '(0):')
+        print('-----------------')
+        print(original[1])
+        print('-----------------')
+        print('First version ' + first[0] + '(1):')
+        print('-----------------')
+        print(first[1])
+        print('-----------------')
+        print('Second version ' + second[0] + '(2):')
+        print('-----------------')
+        print(second[1])
+        print('-----------------')
+        return 2
+
 
 if __name__ == '__main__':
     unittest.main()
