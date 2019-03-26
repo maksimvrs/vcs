@@ -97,6 +97,27 @@ def merge(branch):
         click.echo('Error: ' + str(e))
 
 
+@main.command()
+@click.argument('branch', nargs=1, type=click.STRING)
+def rebase(branch):
+    """Rebase branch to current"""
+    try:
+        Client.rebase(branch, choise_merge)
+    except CustomException as e:
+        click.echo('Error: ' + str(e))
+
+
+@main.command()
+@click.argument('branch', nargs=1, type=click.STRING)
+@click.argument('commit', nargs=1, type=click.STRING)
+def cherry_pick(branch, commit):
+    """Cherry-pick commit from branch to current"""
+    try:
+        Client.cherry_pick(branch, commit, choise_merge)
+    except CustomException as e:
+        click.echo('Error: ' + str(e))
+
+
 def choise_merge(original, first, second):
     """
     :original: (branch name, value)

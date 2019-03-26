@@ -179,8 +179,8 @@ class Client:
     @staticmethod
     def merge(branch, callback, directory=os.getcwd()):
         """
-        :branch: branch from which we will merge
-        :callback: callback for conflict resolution
+        :param branch: branch from which we will merge
+        :param callback: callback for conflict resolution
         """
         if Repository.get_current_branch(directory) != \
                 Repository.get_parent_branch(branch, directory)[0]:
@@ -202,3 +202,70 @@ class Client:
         )
         Repository.merge(original_commit, first_commit, second_commit,
                          branch, callback, directory=directory)
+        commit = Client.commit('user', 'Merge from ' + branch + ' / ' + Repository.get_current_commit(branch,
+                                                                                                      directory=directory),
+                               directory=directory)
+        Repository.create_merge_file(branch, commit, directory=directory)
+
+    @staticmethod
+    def rebase(branch, callback, directory=os.getcwd()):
+        """
+        :param branch: branch from which we will merge
+        :param callback: callback for conflict resolution
+        """
+        if Repository.get_current_branch(directory) != \
+                Repository.get_parent_branch(branch, directory)[0]:
+            raise DataError('The branches do not match')
+        first_commit = Client.get(
+            Repository.get_current_branch(directory),
+            Repository.get_current_commit(Repository.get_current_branch(directory), directory=directory),
+            directory=directory
+        )
+        second_commit = Client.get(
+            branch,
+            Repository.get_current_commit(branch, directory=directory),
+            directory=directory
+        )
+        original_commit = Client.get(
+            Repository.get_current_branch(directory),
+            Repository.get_parent_branch(branch, directory)[1],
+            directory=directory
+        )
+        Repository.merge(original_commit, first_commit, second_commit,
+                         branch, callback, directory=directory)
+        Client.commit('user', 'Rebase from ' + branch, directory=directory)
+        Repository.remove_branch(branch, directory=directory)
+
+    @staticmethod
+    def cherry_pick(branch, commit, callback, directory=os.getcwd()):
+        """
+        :param branch: branch from which we will merge
+        :param callback: callback for conflict resolution
+        """
+        if Repository.get_current_branch(directory) != \
+                Repository.get_parent_branch(branch, directory)[0]:
+            raise DataError('The branches do not match')
+        first_commit = Client.get(
+            Repository.get_current_branch(directory),
+            Repository.get_current_commit(Repository.get_current_branch(directory), directory=directory),
+            directory=directory
+        )
+        second_commit = Client.get(
+            branch,
+            commit,
+            directory=directory
+        )
+        original_commit = Client.get(
+            Repository.get_current_branch(directory),
+            Repository.get_parent_branch(branch, directory)[1],
+            directory=directory
+        )
+        Repository.merge(original_commit, first_commit, second_commit,
+                         branch, callback, directory=directory)
+        Client.commit('user', 'Cherry-pick from ' + branch, directory=directory)
+        Repository.create_cherry_pick_file(
+            branch,
+            Repository.get_current_commit(Repository.get_current_branch(directory), directory=directory),
+            commit,
+            directory=directory
+        )

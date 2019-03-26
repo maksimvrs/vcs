@@ -300,7 +300,7 @@ class ClientTests(unittest.TestCase):
         Client.add('README.md', directory=self.PATH)
         Client.commit('Maksim', 'second commit', directory=self.PATH)
 
-        Client.merge('develop', lambda a, b, c: 1, directory=self.PATH)
+        Client.merge('develop', lambda a, b, c: 2, directory=self.PATH)
 
     def test_merge_subdir(self):
         Client.init(directory=self.PATH)
@@ -360,7 +360,39 @@ class ClientTests(unittest.TestCase):
         Client.add('src/main.txt', directory=self.PATH)
         Client.commit('Maksim', 'second commit', directory=self.PATH)
 
-        # Client.merge('develop', self.choise, directory=self.PATH)
+        Client.merge('develop', self.choise, directory=self.PATH)
+
+    def test_rebase(self):
+        Client.init(directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello')
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.commit('Maksim', 'Inital commit', directory=self.PATH)
+
+        Client.branch('develop', directory=self.PATH)
+        Client.checkout('develop', directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello\nuser')
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.commit('Maksim', 'Commit to develop branch',
+                      directory=self.PATH)
+
+        Client.checkout('master', directory=self.PATH)
+
+        f = open(os.path.join(self.PATH, 'README.md'), 'w')
+        f.write('hello\nworld')
+        f.close()
+
+        Client.add('README.md', directory=self.PATH)
+        Client.commit('Maksim', 'second commit', directory=self.PATH)
+
+        Client.rebase('develop', lambda a, b, c: 2, directory=self.PATH)
 
     def choise(self, original, first, second):
         print('Original version ' + original[0] + '(0):')

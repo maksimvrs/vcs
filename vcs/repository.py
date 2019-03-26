@@ -114,6 +114,8 @@ class Repository:
                 indexing_files = json.load(f)
             except ValueError:
                 indexing_files = {}
+            if 'files' not in indexing_files:
+                return None
             return indexing_files['files']
 
     @staticmethod
@@ -161,6 +163,11 @@ class Repository:
         open(os.path.join(work_path, 'CURRENT'), 'tw').close()
         open(os.path.join(work_path, 'HEAD'), 'tw').close()
         open(os.path.join(work_path, 'PARENT'), 'tw').close()
+
+    @staticmethod
+    def remove_branch(branch, directory=os.getcwd()):
+        Repository.check_repo(directory)
+        shutil.rmtree(os.path.join(Repository.vcs_path(directory), 'commits', branch))
 
     @staticmethod
     def get_head_commit(branch, directory=os.getcwd()):
@@ -351,6 +358,64 @@ class Repository:
             Repository.write(t, os.path.join(directory, tree.name))
 
     @staticmethod
+    def create_merge_file(branch, commit, directory=os.getcwd()):
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
+        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch)
+        with open(os.path.join(work_path, 'MERGE'), 'tw') as f:
+            f.seek(0)
+            data = Repository.get_current_branch(directory) + ' / ' + commit
+            f.write(data)
+            f.truncate()
+
+    @staticmethod
+    def get_merge_file(branch, directory=os.getcwd()):
+        """
+        :param branch: branch
+        :param directory: directory
+        :return: (branch, commit)
+        """
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
+        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch)
+        if not os.path.exists(os.path.join(work_path, 'MERGE')):
+            return None
+        with open(os.path.join(work_path, 'MERGE'), 'r') as f:
+            try:
+                return f.read().split(' / ')
+            except ValueError:
+                return None
+
+    @staticmethod
+    def create_cherry_pick_file(branch, commit_to, commit_from, directory=os.getcwd()):
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
+        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch)
+        with open(os.path.join(work_path, 'CHERRY_PICK'), 'tw') as f:
+            f.seek(0)
+            data = Repository.get_current_branch(directory) + ' / ' + commit_to + ' / ' + commit_from
+            f.write(data)
+            f.truncate()
+
+    @staticmethod
+    def get_cherry_pick_file(branch, directory=os.getcwd()):
+        """
+        :param branch: branch
+        :param directory: directory
+        :return: (branch, commit_to, commit_from)
+        """
+        Repository.check_repo(directory)
+        Repository.check_branch(branch, directory)
+        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch)
+        if not os.path.exists(os.path.join(work_path, 'CHERRY_PICK')):
+            return None
+        with open(os.path.join(work_path, 'CHERRY_PICK'), 'r') as f:
+            try:
+                return f.read().split(' / ')
+            except ValueError:
+                return None
+
+    @staticmethod
     def merge(original_tree, first_tree, second_tree, branch, callback, directory=os.getcwd()):
         # Repository.check_repo(directory)
         conflict_blobs = list(set([blob.name for blob in first_tree.blobs]) & \
@@ -422,6 +487,7 @@ class Repository:
                         fd.write('\n'.join(data.second) + '\n')
             fd.truncate()
             fd.close()
+            Repository.add_indexing(path, directory=directory)
 
         conflict_trees = list(set([tree.name for tree in first_tree.trees]) & \
                               set([tree.name for tree in second_tree.trees]))
