@@ -309,7 +309,7 @@ class ClientTests(unittest.TestCase):
         f.write('hello')
         f.close()
 
-        f = open('./original_file.txt', 'r')
+        f = open('./tests/data/original_file.txt', 'r')
         data = f.read()
         f.close()
 
@@ -329,7 +329,7 @@ class ClientTests(unittest.TestCase):
         f.write('hello\nuser')
         f.close()
 
-        f = open('./first_file.txt', 'r')
+        f = open('./tests/data/first_file.txt', 'r')
         data = f.read()
         f.close()
 
@@ -348,7 +348,7 @@ class ClientTests(unittest.TestCase):
         f.write('hello\nworld')
         f.close()
 
-        f = open('./second_file.txt', 'r')
+        f = open('./tests/data/second_file.txt', 'r')
         data = f.read()
         f.close()
 

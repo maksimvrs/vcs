@@ -20,46 +20,46 @@ class DiffTests(unittest.TestCase):
         for i in Diff.diff3('hello\n.'.splitlines(),
                             'hello\n!\nasdfasdf'.splitlines(),
                             'hello\n?\nasdfasdf'.splitlines()):
-            # print('====================')
-            # print('Stable' if i.status == 0 else 'Conflict')
-            # print(i.original)
-            # print(i.first)
-            # print(i.second)
-            # print('====================')
+            print('====================')
+            print('Stable' if i.status == 0 else 'Conflict')
+            print(i.original)
+            print(i.first)
+            print(i.second)
+            print('====================')
 
     def test_diff3_empty_original(self):
         for i in Diff.diff3(''.splitlines(),
                             'hello\n!\nasdfasdf'.splitlines(),
                             'hello\n?\nasdfasdf'.splitlines()):
-            # print('====================')
-            # print('Stable' if i.status == 0 else 'Conflict')
-            # print(i.original)
-            # print(i.first)
-            # print(i.second)
-            # print('====================')
+            print('====================')
+            print('Stable' if i.status == 0 else 'Conflict')
+            print(i.original)
+            print(i.first)
+            print(i.second)
+            print('====================')
 
     def test_diff3_big_text(self):
-        f = open('./original_file.txt', 'r')
+        f = open('./tests/data/original_file.txt', 'r')
         data_original = f.read()
         f.close()
 
-        f = open('./first_file.txt', 'r')
+        f = open('./tests/data/first_file.txt', 'r')
         data_first = f.read()
         f.close()
 
-        f = open('./second_file.txt', 'r')
+        f = open('./tests/data/second_file.txt', 'r')
         data_second = f.read()
         f.close()
-        # for i in Diff.diff3(data_original.splitlines(),
-        #                     data_first.splitlines(),
-        #                     data_second.splitlines()):
-        #
-        #     print('====================')
-        #     print('Stable' if i.status == 0 else 'Conflict')
-        #     print(i.original)
-        #     print(i.first)
-        #     print(i.second)
-        #     print('====================')
+        for i in Diff.diff3(data_original.splitlines(),
+                            data_first.splitlines(),
+                            data_second.splitlines()):
+
+            print('====================')
+            print('Stable' if i.status == 0 else 'Conflict')
+            print(i.original)
+            print(i.first)
+            print(i.second)
+            print('====================')
 
 
 if __name__ == '__main__':

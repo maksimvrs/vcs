@@ -167,7 +167,9 @@ class Repository:
     @staticmethod
     def remove_branch(branch, directory=os.getcwd()):
         Repository.check_repo(directory)
-        shutil.rmtree(os.path.join(Repository.vcs_path(directory), 'commits', branch))
+        shutil.rmtree(os.path.join(Repository.vcs_path(directory),
+                                   'commits',
+                                   branch))
 
     @staticmethod
     def get_head_commit(branch, directory=os.getcwd()):
@@ -361,7 +363,9 @@ class Repository:
     def create_merge_file(branch, commit, directory=os.getcwd()):
         Repository.check_repo(directory)
         Repository.check_branch(branch, directory)
-        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch)
+        work_path = os.path.join(Repository.vcs_path(directory),
+                                 'commits',
+                                 branch)
         with open(os.path.join(work_path, 'MERGE'), 'tw') as f:
             f.seek(0)
             data = Repository.get_current_branch(directory) + ' / ' + commit
@@ -377,7 +381,9 @@ class Repository:
         """
         Repository.check_repo(directory)
         Repository.check_branch(branch, directory)
-        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch)
+        work_path = os.path.join(Repository.vcs_path(directory),
+                                 'commits',
+                                 branch)
         if not os.path.exists(os.path.join(work_path, 'MERGE')):
             return None
         with open(os.path.join(work_path, 'MERGE'), 'r') as f:
@@ -387,13 +393,17 @@ class Repository:
                 return None
 
     @staticmethod
-    def create_cherry_pick_file(branch, commit_to, commit_from, directory=os.getcwd()):
+    def create_cherry_pick_file(branch, commit_to, commit_from,
+                                directory=os.getcwd()):
         Repository.check_repo(directory)
         Repository.check_branch(branch, directory)
-        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch)
+        work_path = os.path.join(Repository.vcs_path(directory),
+                                 'commits',
+                                 branch)
         with open(os.path.join(work_path, 'CHERRY_PICK'), 'tw') as f:
             f.seek(0)
-            data = Repository.get_current_branch(directory) + ' / ' + commit_to + ' / ' + commit_from
+            data = Repository.get_current_branch(directory) + \
+                ' / ' + commit_to + ' / ' + commit_from
             f.write(data)
             f.truncate()
 
@@ -406,7 +416,8 @@ class Repository:
         """
         Repository.check_repo(directory)
         Repository.check_branch(branch, directory)
-        work_path = os.path.join(Repository.vcs_path(directory), 'commits', branch)
+        work_path = os.path.join(
+            Repository.vcs_path(directory), 'commits', branch)
         if not os.path.exists(os.path.join(work_path, 'CHERRY_PICK')):
             return None
         with open(os.path.join(work_path, 'CHERRY_PICK'), 'r') as f:
@@ -416,12 +427,13 @@ class Repository:
                 return None
 
     @staticmethod
-    def merge(original_tree, first_tree, second_tree, branch, callback, directory=os.getcwd()):
+    def merge(original_tree, first_tree, second_tree, branch, callback,
+              directory=os.getcwd()):
         # Repository.check_repo(directory)
-        conflict_blobs = list(set([blob.name for blob in first_tree.blobs]) & \
-                              set([blob.name for blob in second_tree.blobs]))
-        other_blobs = list(set([blob.name for blob in first_tree.blobs]) ^ \
-                           set([blob.name for blob in second_tree.blobs]))
+        conflict_blobs = list(set([blob.name for blob in first_tree.blobs])
+                              & set([blob.name for blob in second_tree.blobs]))
+        other_blobs = list(set([blob.name for blob in first_tree.blobs])
+                           ^ set([blob.name for blob in second_tree.blobs]))
 
         for blob in other_blobs:
             assert (first_tree.name == second_tree.name)
@@ -431,7 +443,8 @@ class Repository:
                     os.remove(path)
                 except OSError as e:
                     raise DataError(str(e))
-            data = next((b for b in first_tree.blobs + second_tree.blobs if b.name == blob)).data
+            data = next((b for b in first_tree.blobs +
+                         second_tree.blobs if b.name == blob)).data
             fd = open(path, 'w+')
             fd.seek(0)
             fd.write(data)
@@ -476,8 +489,12 @@ class Repository:
                 if data.status == MergeUnitStatus.Stable:
                     fd.write('\n'.join(data.first) + '\n')
                 elif data.status == MergeUnitStatus.Conflict:
-                    option = callback((Repository.get_current_branch(directory), '\n'.join(data.original) + '\n'),
-                                      (Repository.get_current_branch(directory), '\n'.join(data.first) + '\n'),
+                    option = callback((
+                        Repository.get_current_branch(directory),
+                        '\n'.join(data.original) + '\n'),
+                                      (Repository.get_current_branch(
+                                          directory), '\n'.join(data.first)
+                                                      + '\n'),
                                       (branch, '\n'.join(data.second) + '\n'))
                     if option == 0:
                         fd.write('\n'.join(data.original) + '\n')
@@ -489,10 +506,10 @@ class Repository:
             fd.close()
             Repository.add_indexing(path, directory=directory)
 
-        conflict_trees = list(set([tree.name for tree in first_tree.trees]) & \
-                              set([tree.name for tree in second_tree.trees]))
-        other_trees = list(set([tree.name for tree in first_tree.trees]) ^ \
-                           set([tree.name for tree in second_tree.trees]))
+        conflict_trees = list(set([tree.name for tree in first_tree.trees])
+                              & set([tree.name for tree in second_tree.trees]))
+        other_trees = list(set([tree.name for tree in first_tree.trees])
+                           ^ set([tree.name for tree in second_tree.trees]))
 
         for tree in other_trees:
             Repository.write(tree, os.path.join(directory, tree.name))
@@ -516,5 +533,6 @@ class Repository:
                     second_tree_data = second_t
                     break
 
-            Repository.merge(original_tree_data, first_tree_data, second_tree_data,
+            Repository.merge(original_tree_data, first_tree_data,
+                             second_tree_data,
                              branch, callback, directory=directory)

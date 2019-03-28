@@ -187,7 +187,8 @@ class Client:
             raise DataError('The branches do not match')
         first_commit = Client.get(
             Repository.get_current_branch(directory),
-            Repository.get_current_commit(Repository.get_current_branch(directory), directory=directory),
+            Repository.get_current_commit(
+                Repository.get_current_branch(directory), directory=directory),
             directory=directory
         )
         second_commit = Client.get(
@@ -202,9 +203,11 @@ class Client:
         )
         Repository.merge(original_commit, first_commit, second_commit,
                          branch, callback, directory=directory)
-        commit = Client.commit('user', 'Merge from ' + branch + ' / ' + Repository.get_current_commit(branch,
-                                                                                                      directory=directory),
-                               directory=directory)
+        commit = Client.commit(
+            'user', 'Merge from ' + branch + ' / '
+            + Repository.get_current_commit(branch,
+                                            directory=directory),
+            directory=directory)
         Repository.create_merge_file(branch, commit, directory=directory)
 
     @staticmethod
@@ -218,7 +221,8 @@ class Client:
             raise DataError('The branches do not match')
         first_commit = Client.get(
             Repository.get_current_branch(directory),
-            Repository.get_current_commit(Repository.get_current_branch(directory), directory=directory),
+            Repository.get_current_commit(
+                Repository.get_current_branch(directory), directory=directory),
             directory=directory
         )
         second_commit = Client.get(
@@ -247,7 +251,9 @@ class Client:
             raise DataError('The branches do not match')
         first_commit = Client.get(
             Repository.get_current_branch(directory),
-            Repository.get_current_commit(Repository.get_current_branch(directory), directory=directory),
+            Repository.get_current_commit(
+                Repository.get_current_branch(directory),
+                directory=directory),
             directory=directory
         )
         second_commit = Client.get(
@@ -262,10 +268,12 @@ class Client:
         )
         Repository.merge(original_commit, first_commit, second_commit,
                          branch, callback, directory=directory)
-        Client.commit('user', 'Cherry-pick from ' + branch, directory=directory)
+        Client.commit('user', 'Cherry-pick from '
+                              + branch, directory=directory)
         Repository.create_cherry_pick_file(
             branch,
-            Repository.get_current_commit(Repository.get_current_branch(directory), directory=directory),
+            Repository.get_current_commit(
+                Repository.get_current_branch(directory), directory=directory),
             commit,
             directory=directory
         )

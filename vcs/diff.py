@@ -68,7 +68,10 @@ class Diff:
                 first[match[0][1]:match[0][1] + len(first)],
                 second[match[0][2]:match[0][2] + len(second)]))
         elif not len(original) == len(first) == len(second) == 0:
-            result.add(MergeUnit(original, first, second, MergeUnitStatus.Conflict))
+            result.add(MergeUnit(original,
+                                 first,
+                                 second,
+                                 MergeUnitStatus.Conflict))
         return result
 
     @staticmethod
@@ -108,17 +111,36 @@ class Diff:
                         if original_index == 0 or \
                            first_index == 0 or \
                            second_index == 0:
-                            substrings[original_index][first_index][second_index] = 1
+                            substrings[
+                                original_index][
+                                first_index][
+                                    second_index] = 1
                         else:
-                            substrings[original_index][first_index][second_index] = substrings[original_index - 1][first_index - 1][second_index - 1] + 1
+                            substrings[
+                                original_index][
+                                    first_index][
+                                        second_index] = substrings[
+                                            original_index - 1
+                            ][first_index - 1
+                              ][second_index - 1
+                                ] + 1
                     else:
                         if original_index != 0 and \
                            first_index != 0 and \
                            second_index != 0 and \
-                           substrings[original_index - 1][first_index - 1][second_index - 1] > max_match_len:
-                            max_match_len = substrings[original_index - 1][first_index - 1][second_index - 1]
+                           substrings[
+                                original_index - 1][
+                                    first_index - 1][
+                                        second_index - 1] > max_match_len:
+                            max_match_len = substrings[
+                                original_index - 1][
+                                    first_index - 1][
+                                        second_index - 1]
                             max_match = (original_index - max_match_len,
                                          first_index - max_match_len,
                                          second_index - max_match_len)
-                        substrings[original_index][first_index][second_index] = 0
+                        substrings[
+                            original_index][
+                                first_index][
+                                    second_index] = 0
         return max_match, max_match_len
